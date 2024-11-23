@@ -1,0 +1,24 @@
+Member 1: Katherine Tu, CNetID: katherinetu
+Member 2: Yuliana Zhang, CNetID: yuejiu
+Member 3: Dale Jin, CNetID: jin86
+
+Policy Topic
+Residential buildings consist of over 70% of Chicago’s greenhouse gas emissions, and the Mayor’s Office established programs across the city to expand access to green space and reduce carbon emissions. Improving energy efficiency of buildings is the biggest and most cost-effective way to reduce carbon emissions, and the Chicago Mayor’s Office initiated a three-year project named the Chicago Retrofit Roadmap in 2020. Working with Elevate, the U.S. Department of Energy, the National Renewable Energy Laboratory, and ComEd, this project aims to look at the potential of relieving the stress of buildings under extreme heat and reducing carbon emissions by retrofitting Chicago’s housing for its current stock.
+
+Our project aims to discuss the trends and patterns of greenhouse gas emissions, electricity usage, and natural gas usage in Chicago, and create data visualizations to understand the gaps and effects of the Chicago Retrofit Program. 
+
+
+Data Sources & Mode of Retrieval 
+Our project is going to utilize data from the Chicago Energy Benchmarking Report. This dataset contains self-reported energy information from existing buildings in the City of Chicago, with data collection conducted annually since 2014. Our project will focus on data from 2017 to 2022, including a total of 8,113 parcel-level observations. The analysis primarily estimates two types of independent variables: carbon emissions and energy consumption. Carbon emissions are measured by greenhouse gas (GHG) emissions in metric tons, while energy consumption is assessed through both gas and electricity usage in a thousand British Thermal Unit.
+
+Data wrangling (25%) & Plotting (25%)
+Choose at least 2 datasets and cleaning data
+Plots: overall trends in GHG, electricity, gas usage in Chicago from 2017-2022 (set a vertical line in 2020)
+**Geopanda graphs by year (try whether this can be poltted in shiny)
+**By building types → Shiny dynamic plots 1
+**By communities (add a vertical line in 2020) communities == 20 selected by the program → Shiny dynamic plots 2
+(– subplot within the plots2, we can add new plot by dividing the whole community data into several building tyes by communities (add a vertical line in 2020) communities == 20 selected by the program, (add a vertical line in 2020) by → Shiny dynamic plots 2.2)
+
+Git history (10%)
+Write up (15%)
+Presentation (15%)

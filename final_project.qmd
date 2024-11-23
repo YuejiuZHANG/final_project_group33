@@ -1,0 +1,44 @@
+---
+title: "Final Project: Group 33"
+author: "Dale Jin, Katherine Tu, Yuliana Zhang"
+date: "Dec 2"
+
+format: 
+    pdf: 
+        include-in-header: 
+            text: | 
+                \usepackage{fvextra} \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}} 
+        
+        include-before-body: 
+            text: |
+                \RecustomVerbatimEnvironment{verbatim}{Verbatim}{ showspaces = false, showtabs = false, breaksymbolleft={}, breaklines}
+---
+
+
+```{python}
+import pandas as pd
+import altair as alt
+alt.renderers.enable("png")
+import time
+import warnings 
+warnings.filterwarnings('ignore')
+import os
+```
+
+
+
+1. Data Cleaning
+
+```{python}
+
+```
+
+2. Build Geopanda Graphs by Year
+
+```{python}
+
+```
+
+3. Shiny dynamic plots 1
+
+4. Shiny dynamic plots 2
