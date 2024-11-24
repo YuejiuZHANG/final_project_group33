@@ -1,0 +1,326 @@
+---
+title: "Problem Set 1: Parking Tickets"
+author: "Yuejiu (Yuliana) Zhang"
+date: "Oct 4"
+format: 
+  html:
+    code-fold: false
+    code-overflow: wrap
+execute:
+  eval: true
+  echo: true
+---
+
+1. **PS1:** Due Sat Oct 5 at 5:00PM Central. Worth 50 points. Initiate your **[repo](https://classroom.github.com/a/uhUVze3Y)** 
+
+We use (`*`) to indicate a problem that we think might be time consuming. 
+
+Steps to submit (5 points on PS1 and 10 points on PS2)
+
+1. "This submission is my work alone and complies with the 30538 integrity policy." Add your initials to indicate your agreement: \*\* YZ \*\*
+2. "I have uploaded the names of anyone I worked with on the problem set **[here](https://docs.google.com/forms/d/1-zzHx762odGlpVWtgdIC55vqF-j3gqdAp6Pno1rIGK0/edit)**" \*\* Yuanhao Jin \*\* (1 point)
+3. Late coins used this pset: \*\* 1 \*\* Late coins left after submission: \*\* 3 \*\*
+4. Knit your `ps1.qmd` to make `ps1.pdf`. 
+    * The PDF should not be more than 25 pages. Use `head()` and re-size figures when appropriate. 
+5. Push  `ps1.qmd` and `ps1.pdf` to your github repo. It is fine to use Github Desktop.
+6. Submit `ps1.pdf` via Gradescope (4 points) 
+7. Tag your submission in Gradescope
+
+# Part 1
+## Read in one percent sample (15 Points)
+
+```{python} 
+# For preperation, load library and path of CSV file
+import pandas as pd
+import altair as alt
+import os
+import warnings 
+warnings.filterwarnings("ignore")
+
+# Local path
+path = r"/Users/yuejiuzhang/Documents/Uchicago/PPHA30538/ppha30538_fall2024/problem_sets/ps1/data/"
+```
+
+```{python}
+# File path
+tickets = r"parking_tickets_one_percent.csv"
+path_tickets = os.path.join(path, tickets)
+```
+
+### Question 1
+```{python}
+# Use time to measure the time-efficiency of opening the CSV file in python
+# Ref from "https://medium.com/casual-inference/the-most-time-efficient-ways-to-import-csv-data-in-python-cc159b44063d"
+import time
+
+def load_and_validate_csv(file_path, expected_rows):
+    # Use time to measure the time-efficiency of opening the CSV file in python
+    start_time = time.time()
+    df = pd.read_csv(file_path)
+    load_time = time.time() - start_time
+    print(f"Loading this CSV file took {load_time} seconds.")
+    
+    # Use the assert Statement to make sure there are 287458 rows
+    # Ref from "https://www.datacamp.com/tutorial/understanding-the-python-assert-statement"
+    assert len(df) == expected_rows, f"This CSV file does not have {expected_rows} rows."
+    print("This CSV file successfully complies with the correct number of rows.")
+    return df
+
+tickets_df = load_and_validate_csv(path_tickets, 287458)
+```
+
+### Question 2
+```{python}
+# Define a function calculate how many megabytes is the CSV file
+# Ref from "https://www.digitalocean.com/community/tutorials/how-to-get-file-size-in-python"
+def get_file_size(file_path):
+    file_size = os.path.getsize(file_path)
+    file_size_mb = file_size / (1024 * 1024)
+    return file_size_mb
+
+my_file_size = get_file_size(path_tickets)
+print(f"The size of this CSV file is: {my_file_size} MB")
+
+# As the sample data set is about one percent of the full data set
+# The full data set is 100 times of the sample data set
+print(f"The size of the full data set is: {100*my_file_size} MB")
+```
+
+### Question 3
+
+By observation, the data is sorted by issue_date.
+
+```{python}
+# Use a for loop to find which column is sorted by default
+# Ref from "https://stackoverflow.com/questions/28419877/check-whether-non-index-column-sorted-in-pandas"
+for col in tickets_df.columns:
+    if tickets_df[col].is_monotonic_increasing or tickets_df[col].is_monotonic_decreasing:
+        sorted_column = col
+        print(f"Data is sorted by the column: {sorted_column}")
+        break
+
+# Subset the dataset to the first 500 rows
+subset_df = tickets_df.head(500)
+
+# Write a function that tests if the column is ordered in the subset
+def is_column_ordered(subset_df, col):
+    if subset_df[col].is_monotonic_increasing or subset_df[col].is_monotonic_decreasing:
+        ordered_col = col
+        print(f"The column '{ordered_col}' is ordered in the subset.")
+    else:
+        print(f"The column '{col}' is not ordered in the subset.")
+
+is_column_ordered(subset_df, sorted_column)
+```
+
+But I still want to check my assumption that whether the CSV file is sorted by issue_date.
+
+```{python}
+is_column_ordered(subset_df, "issue_date")
+```
+
+# Part 2
+## Cleaning the data and benchmarking (15 Points)
+
+### Question 1
+```{python}
+# Convert the "issue_date'"" column to datetime format
+tickets_df["issue_date"] = pd.to_datetime(tickets_df["issue_date"])
+
+# Extract the year from the 'issue_date' column and create a new column 'year'
+tickets_df["year"] = tickets_df['issue_date'].dt.year
+
+# Select a subset that tickets were issued in the data in 2017
+selected_df = tickets_df[tickets_df["year"]==2017]
+tickets_in_2017 = len(selected_df)
+print(f"There are {tickets_in_2017} tickets issued in 2017 in the sample data set")
+print(f"There are {100*tickets_in_2017} tickets issued in 2017 in the full data set")
+```
+
+According to the article (ref from "https://features.propublica.org/driven-into-debt/chicago-ticket-debt-bankruptcy/"), "Each year, the City of Chicago issues more than 3 million tickets for a wide range of parking, vehicle compliance and automated traffic camera violations, from $25 citations for broken headlights to $250 tickets for parking in a disabled zone."
+
+There is a big difference between the implication and the actual number, which I think is meaningful. I guess the difference comes from the fact that the sample data does not cover all representatives or is not totally randomly selected.
+
+
+### Question 2
+
+```{python}
+# Pooling the top 20 most frequent violation types
+violation_top20 = tickets_df["violation_description"].value_counts().head(20).reset_index()
+
+# Rename and change the type of data as it would not recognize to the chart
+violation_top20.columns = ["violation_type", "frequency"]
+
+# Here I used Chatgpt to help me debug as I cannot find why I fail to draw barchart without this step:
+violation_top20["violation_type"] = violation_top20["violation_type"].astype(str)
+violation_top20["frequency"] = violation_top20["frequency"].astype(int)
+
+# Draw the bar chart using altair
+alt.Chart(violation_top20).mark_bar().encode(
+    alt.X("frequency:Q", axis = alt.Axis(title = "Frequency"), ),
+    #Change settings of label, ref from "https://stackoverflow.com/questions/71215156/how-to-wrap-axis-label-in-altair"
+    alt.Y("violation_type:N", sort = "-x", axis = alt.Axis(title = "Violation Type", maxExtent = 300, labelLimit = 300))
+    ).properties(
+        width = 400, 
+        height = 400, 
+        title = "Top 20 Most Frequent Violation Types",
+)
+
+```
+
+## Visual Encoding (15 Points)
+
+### Questions 1
+
+```{python}
+# Manually input the dataframe
+df = pd.DataFrame([
+    ["ticket_number", "N"],
+    ["issue_date", "T"],
+    ["violation_location", "N"],
+    ["license_plate_number", "N"],
+    ["license_plate_state", "N"],
+    ["license_plate_type", "N"],
+    ["zipcode", "N"],
+    ["violation_code", "N"],
+    ["violation_description", "N"],
+    ["unit", "N"],
+    ["unit_description", "N"],
+    ["vehicle_make", "N"],
+    ["fine_level1_amount", "Q"],
+    ["fine_level2_amount", "Q"],
+    ["current_amount_due", "Q"],
+    ["total_payments", "Q"],
+    ["ticket_queue", "N"],
+    ["ticket_queue_date", "T"],
+    ["notice_level", "N"],
+    ["hearing_disposition", "N"],
+    ["notice_number", "N"],
+    ["officer", "N"],
+    ["address", "N"]
+])
+
+# Name columns
+df.columns = ["Variable Name", "Data Type"]
+
+# Convert dataframe to a markdown table
+markdown_table = df.to_markdown(index = False)
+print(markdown_table)
+```
+
+### Questions 2
+
+```{python}
+## Find the fraction paid
+# Use "vehicle_make", "ticket_queue" from the full data set
+vehicle_df = tickets_df[["vehicle_make", "ticket_queue"]]
+
+# Group by vehicle_make to calculate the number of total tickets and paid_tickets
+total_tickets = vehicle_df.groupby("vehicle_make").size().reset_index(name = "total_tickets")
+
+paid_tickets = vehicle_df[vehicle_df["ticket_queue"] == "Paid"].groupby("vehicle_make").size().reset_index(name = "paid_tickets")
+
+# Merge the two subsets to get paid fraction
+vehicle_paid_fraction_df = pd.merge(total_tickets, paid_tickets, on = "vehicle_make", how = "left")
+vehicle_paid_fraction_df["fraction_paid"] = vehicle_paid_fraction_df["paid_tickets"] / vehicle_paid_fraction_df["total_tickets"]
+
+## Draw the bar chart
+alt.Chart(vehicle_paid_fraction_df).mark_bar().encode(
+    alt.X("fraction_paid:Q", axis = alt.Axis(title = "Fraction of Paid Tickets")),
+    alt.Y("vehicle_make:N", axis = alt.Axis(title = "Vehicle Make"))
+    ).properties(
+        title = "Fraction of Paid Tickets by Vehicle Make", 
+        width = 500, 
+        height = 1200
+)
+```
+
+I observed that most luxury vehicle owners paid more than others. I guess the reason is that those vehicle owners are in good economic condition and always willing to pay these obligations on time.
+
+### Question 3
+
+As the sample graph used monthly data, I also use monthly data below:
+
+```{python}
+# Shape the time data to get year and month together for future use
+tickets_df["year_month"] = tickets_df["issue_date"].dt.strftime("%Y-%m")
+
+# Build new dataframe to store monthly tickets by groupby function
+tickets_over_time = tickets_df.groupby("year_month").size().reset_index(name = "monthly_tickets")
+
+# Draw the chart using the sample code provided
+alt.Chart(tickets_over_time).mark_area(
+    interpolate = "step-after",
+    line = True
+    ).encode(
+    alt.X("year_month:T", axis = alt.Axis(title = "Year")),
+    alt.Y("monthly_tickets:Q", axis = alt.Axis(title = "Real time tickets issued (by month)"))
+    ).properties(
+        title = "The Number of Tickets Issued Over Time", 
+        width = 500, 
+        height = 500
+)
+```
+
+### Question 4
+
+```{python}
+# Prepre for data as we need to use both month and day
+tickets_df["month"] = pd.to_datetime(tickets_df["issue_date"]).dt.month
+tickets_df["day"] = pd.to_datetime(tickets_df["issue_date"]).dt.day
+
+# Build new dataframe by groupby function and store the counted tickets
+tickets_date = tickets_df.groupby(["month", "day"]).size().reset_index(name = "count")
+
+# Draw the chart
+alt.Chart(tickets_date).mark_rect().encode(
+    alt.X("day:O").title("Day"),
+    alt.Y("month:O").title("Month"),
+    alt.Color("count:Q").title("Tickets"),
+    tooltip = [
+        alt.Tooltip("day", title = "Day"),
+        alt.Tooltip("month", title = "Month"),
+        alt.Tooltip("count", title = "Tickets"),
+    ]).properties(
+        title = "The Number of Tickets Issued by Month and Day", 
+        width = 500, 
+        height = 250
+)
+```
+
+### Question 5
+
+```{python}
+# Subset to the five most common types of violations
+violation_top5 = tickets_df["violation_description"].value_counts().head(5).reset_index()
+
+# Extract the top 5 types to a list so that we can filter only these types
+top5 = violation_top5["violation_description"].tolist()
+
+# Build new dataframe by filtering the top 5 data
+filtered_top5 = tickets_df[tickets_df["violation_description"].isin(top5)]
+tickets_top5 = filtered_top5.groupby(["violation_description", "year_month"]).size().reset_index(name = "count")
+
+# Draw the chart
+# The way to format yearmonth data is ref from https://github.com/vega/altair/issues/1951
+alt.Chart(tickets_top5).mark_rect().encode(
+    alt.X('yearmonth(year_month):O', title = "Year").axis(format = "%Y"),
+    alt.Y("violation_description:N").title(None),
+    alt.Color("count:Q").title("Count"),
+    ).properties(
+        title = "The Top 5 Number of Tickets Issued Over Time",
+        width = 500, 
+        height = 200
+)
+```
+
+### Question 6
+
+The plot for Question 3 is more like a real-time tickets issued map. It clearly shows historical data and trends over the years. However, it can only show the overall categories instead of showing which kinds of tickets are issued in real-time.
+
+The plot for Question 4 shows the day and month correlated issued information. This plot allows us to observe which specific day in each year has been issued the most and least tickets. However, a similar issue to the last plot is that we cannot observe the ticket type, and this plot is a little bit harder to read than the last one.
+
+The plot for Question 5 is a chart showing the top 5 common ticket types and the number of tickets issued over time. This plot allows us to observe both the number of tickets issued and the types over time. However, it does not clearly show the overall trend.
+
+### Question 7
+Personally, I will choose the plot from Question 4. If I want a reader to know the enforcement of violations is not evenly distributed over time, I would prefer to show them the number of tickets issued is not the same for each day or that there is no specific pattern of tickets issued. The plot from question 4 can satisfy this requirement as the number of tickets issued for all these years of each day varies. Although the Plot from Question 5 may also show the tickets issued over time, it does not give the total types as a whole. We can only observe the top 5 common types instead of all tickets.

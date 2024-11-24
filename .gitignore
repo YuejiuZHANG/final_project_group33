@@ -1,16 +1,5 @@
-# Ignore everything by default
-*
-
-# Allow specific file types
-!*.qmd
-!*.txt
-!*.csv
-!*.pdf
-!*.html
-!*.png
-
-# Ignore everything inside hidden directories
-.*
+# Ignore specific file types
+*.venv
 
 # Allow .gitignore itself
 !.gitignore
