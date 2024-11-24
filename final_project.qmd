@@ -23,6 +23,10 @@ import time
 import warnings 
 warnings.filterwarnings('ignore')
 import os
+
+import geopandas as gpd
+from shapely.geometry import Point
+import matplotlib.pyplot as plt
 ```
 
 
@@ -30,13 +34,63 @@ import os
 1. Data Cleaning
 
 ```{python}
+df_building = pd.read_csv("data/Chicago_Energy_Benchmarking_-_Covered_Buildings_20240715.csv")
+df_energy = pd.read_csv("data/Chicago_Energy_Benchmarking_20240715.csv")
 
+# Merge by building id
+df_merge = pd.merge(df_energy, df_building, how = 'inner', left_on = 'ID', right_on = 'Building ID')
+
+# Filter for necessary variables
+df = df_merge[[
+    'Data Year', 
+    'Community Area', 
+    'Primary Property Type', 
+    'Gross Floor Area - Buildings (sq ft)', 
+    'Year Built',
+    'Electricity Use (kBtu)',
+    'Natural Gas Use (kBtu)',
+    'Total GHG Emissions (Metric Tons CO2e)',
+    'Latitude_x',
+    'Longitude_x'
+]]
+
+# Rename
+df = df.rename(columns={
+    'Data Year': 'year',
+    'Community Area': 'community',
+    'Primary Property Type': 'property_type',
+    'Gross Floor Area - Buildings (sq ft)': 'area',
+    'Year Built': 'built_year',
+    'Electricity Use (kBtu)': 'electricity',
+    'Natural Gas Use (kBtu)': 'gas',
+    'Total GHG Emissions (Metric Tons CO2e)': 'ghg',
+    'Latitude_x': 'latitude',
+    'Longitude_x': 'longitude'
+})
+
+# Treated (prior retrofitted) communities
+treat = [
+    "Rogers Park","Belmont Cragin","Hermosa","Humboldt Park", "Austin","North Lawndale","South Lawndale","Grand Boulevard","Washington Park","Woodlawn","South Shore","Chatham","South Chicago","Roseland","East Side","McKinley Park","Gage Park","West Englewood","Englewood","Auburn Gresham"]
+treat = [community.upper() for community in treat]
+
+# Merge treated communities to main df
+df['treated'] = df['community'].isin(treat).astype(int)
 ```
 
 2. Build Geopanda Graphs by Year
 
 ```{python}
+# Create geometry points using longitude and latitude
+geometry = [Point(xy) for xy in zip(df['longitude'], df['latitude'])]
 
+# Create a GeoDataFrame
+gdf = gpd.GeoDataFrame(df, geometry=geometry)
+
+# Set a CRS (Coordinate Reference System)
+gdf.set_crs(epsg=4326, inplace=True)  # WGS84 CRS
+
+# Plot the GeoDataFrame
+gdf.plot(column='ghg', cmap='coolwarm', legend=True, figsize=(10, 6))
 ```
 
 3. Shiny dynamic plots 1
