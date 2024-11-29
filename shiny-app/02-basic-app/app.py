@@ -2,7 +2,6 @@ from shiny import App, render, ui, reactive
 from shinywidgets import render_altair, output_widget
 import altair as alt
 import pandas as pd
-import json
 
 app_ui = ui.page_fluid(
     ui.panel_title("Energy Efficiency by Community"),
