@@ -34,9 +34,12 @@ import matplotlib.pyplot as plt
 1. Data Cleaning
 
 ```{python}
+# Loading the Data
 df_building = pd.read_csv("data/Chicago_Energy_Benchmarking_-_Covered_Buildings_20240715.csv")
 df_energy = pd.read_csv("data/Chicago_Energy_Benchmarking_20240715.csv")
+```
 
+```{python}
 # Merge by building id
 df_merge = pd.merge(df_energy, df_building, how = 'inner', left_on = 'ID', right_on = 'Building ID')
 
@@ -95,4 +98,31 @@ gdf.plot(column='ghg', cmap='coolwarm', legend=True, figsize=(10, 6))
 
 3. Shiny dynamic plots 1
 
+```{python}
+df_nontreatment = df[df['treated']==0]
+
+ave_usage = df_nontreatment.groupby(["year","property_type"], as_index = False)[["electricity","gas","ghg"]].mean()
+```
+
+```{python}
+print(ave_usage["property_type"].unique())
+```
+
+```{python}
+ave_usage_residential = ave_usage[ave_usage["property_type"]== "Multifamily Housing"]
+
+alt.Chart(ave_usage_residential).mark_line().encode(
+    alt.X("year:O"),
+    alt.Y("ghg:Q"),
+).transform_filter(alt.datum.year >= 2017).properties(width = 500, height = 300)
+```
+
+```{python}
+alt.Chart(ave_usage).mark_line(point = True).encode(
+    alt.X("year:O"),
+    alt.Y("ghg:Q"),
+    alt.Color("property_type:N"),
+    alt.Tooltip("property_type:N")
+).transform_filter(alt.datum.year >= 2017)
+```
 4. Shiny dynamic plots 2
