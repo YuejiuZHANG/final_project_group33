@@ -77,7 +77,7 @@ def server(input, output, session):
         # Create and return the chart
         line_chart = alt.Chart(df).mark_line().encode(
             alt.X("year:O"),
-            alt.Y("ghg_efficency:Q")
+            alt.Y("Greenhouse Gas:Q")
         ).properties( 
             width=500, 
             height=300
