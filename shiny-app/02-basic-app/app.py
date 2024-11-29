@@ -8,7 +8,12 @@ app_ui = ui.page_fluid(
     ui.panel_title("Energy Efficiency by Community"),
     ui.input_select(id="community", label='Choose a Community',
                     choices=[]),
+    ui.input_select(id='efficiency_type', 
+                    label='Choose an Efficiency Type',
+                    choices=['Electricity','Gas','Greenhouse Gas'],
+                    selected='Greenhouse Gas'), 
     output_widget('efficiency_trend'),
+    ui.output_table("subsetted_data_table")
 )
 
 
@@ -22,17 +27,34 @@ def server(input, output, session):
         df = full_data()
         return df[df['community'] == input.community()]
     
+    @render.table
+    def subsetted_data_table():
+        df = subsetted_data()
+        df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+        df = df.reset_index(drop=True)
+        df = df.rename(columns={"year": "Year",
+                                "Greenhouse Gas": "GHG Efficiency (Metric Tons CO2e/1000 sq ft)",
+                                "Electricity": "Electricity Efficiency (kBtu/1000 sq ft)",
+                                "Gas": "Gas Usage (kBtu/1000 sq ft)",
+                                "community": "Community Name"})
+        return df
+    
     @render_altair
     def efficiency_trend():
         df = subsetted_data()
+        selected_emission = input.efficiency_type()
 
-        chart = alt.Chart(df).mark_line(point = True).encode(
+        chart_data = df.rename(columns={selected_emission: "value"})
+
+        chart = alt.Chart(chart_data).mark_line(point = True).encode(
             alt.X("year:O"),
-            alt.Y("ghg_efficiency:Q"),
+            alt.Y("value:Q").axis(title=f"{selected_emission}")
             ).properties(width = 500, height = 300)
         
+        return chart
+        
     @reactive.effect
-    def update_dropdown():
+    def _():
         df = full_data()
         types_list = df['community'].unique().tolist()
         types_list = sorted(types_list)
