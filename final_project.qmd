@@ -23,6 +23,7 @@ import time
 import warnings 
 warnings.filterwarnings('ignore')
 import os
+import json
 
 import geopandas as gpd
 from shapely.geometry import Point
@@ -80,6 +81,53 @@ treat = [community.upper() for community in treat]
 df['treated'] = df['community'].isin(treat).astype(int)
 ```
 
+```{python}
+# Cleaning Community Names
+df['community'] = df['community'].str.upper()
+df['community'] = df['community'].str.replace("'", "", regex=False)
+df['community'] = df['community'].replace('LAKE VIEW', 'LAKEVIEW')
+
+# Create columns for efficiency
+df['ghg_efficiency'] = (df['ghg']/df['area'])*1000
+df['elec_efficiency'] = (df['electricity']/df['area'])*1000
+df['gas_efficiency'] = (df['gas']/df['area']*1000)
+
+# Create bins for longitudes and latitudes
+
+df['lat_bin'] = ((df["latitude"]//0.01)*0.01).round(2)
+df['lon_bin'] = ((df["longitude"]//0.01)*0.01).round(2)
+```
+
+```{python}
+## 可以删掉 目前还没找到规律
+# Create bins to categorize buildings by the year they are built
+def year_bin(row):
+    if row['built_year'] <= 1900:
+        return "1800-1900"
+    elif 1900 < row['built_year'] <= 1920:
+        return "1900-1920"
+    elif 1920 < row['built_year'] <= 1940:
+        return "1920-1940"
+    elif 1940 < row['built_year'] <= 1960:
+        return "1940-1960"
+    elif 1960 < row['built_year'] <= 1980:
+        return "1960-1980"
+    elif 1980 < row['built_year'] <= 2000:
+        return "1980-2000"
+    elif 2000 < row['built_year'] <= 2020:
+        return "2000-2020"
+    elif row['built_year'] > 2020:
+        return "2020-2022"
+
+df["built_year_bin"] = df.apply(year_bin, axis=1)
+```
+
+```{python}
+# Create a df with no NA values 
+df_clean = df.dropna()
+df_clean_2022 = df_clean[df_clean['year']==2022]
+```
+
 2. Build Geopanda Graphs by Year
 
 ```{python}
@@ -96,12 +144,87 @@ gdf.set_crs(epsg=4326, inplace=True)  # WGS84 CRS
 gdf.plot(column='ghg', cmap='coolwarm', legend=True, figsize=(10, 6))
 ```
 
-3. Shiny dynamic plots 1
+2.1 Dynamic altair maps 
+```{python}
+## Top 500 buildings with the lowest energy efficiencies by each property type in 2022
+
+#sort value by electricity, gas, and ghg efficiencies 
+top_ghg = df_clean_2022.sort_values(by = 'ghg_efficiency', ascending = False).head(500)
+top_elec = df_clean_2022.sort_values(by = 'elec_efficiency', ascending = False).head(500)
+top_gas = df_clean_2022.sort_values(by = 'gas_efficiency', ascending = False).head(500)
+
+#Label their datasets
+top_ghg['type of efficiency'] = 'Greenhouse Gas'
+top_elec['type of efficiency'] = 'Electricity'
+top_gas['type of efficiency'] = 'Gas'
+
+# Concatenate the three datasets
+least_efficient = pd.concat([top_ghg, top_elec, top_gas])
+
+# Save as a new CSV
+least_efficient.to_csv("./shiny-app/interactive_map/least_efficient.csv")
+```
 
 ```{python}
+## Create a map to show the distribution of these buildings
+
+#Import Chicago Map
+import requests 
+
+url = "http://data.cityofchicago.org/api/geospatial/bbvz-uum9?method=export&format=GeoJSON"
+
+response = requests.get(url)
+
+if response.status_code == 200:
+    with open("./shiny-app/interactive_map/chicago-boundaries.geojson","wb") as file:
+        file.write(response.content)
+    print("GeoJSON file downloaded successfully!")
+else:
+    print(f"Failed to download file. Status code: {response.status_code}")
+```
+
+
+3. Shiny dynamic plots 1
+```{python}
+## Create dynamic plot for the average trend by year by community
+average_use = df_clean.groupby(["year","community"], as_index = False)[["elec_efficiency","gas_efficiency","ghg_efficiency"]].mean()
+
+average_use = average_use.rename(columns= {
+    'elec_efficiency':'Electricity',
+    'gas_efficiency':'Gas',
+    'ghg_efficiency':'Greenhouse Gas'
+})
+
+average_use.to_csv("./shiny-app/community_trends/community_use.csv")
+```
+
+4. Shiny dynamic plots 2
+```{python}
+## Create dynamic plot for the trend of energy usage by building type
+property_type_trend = df_clean.groupby(["year","property_type"], as_index = False)[["elec_efficiency","gas_efficiency","ghg_efficiency"]].mean()
+
+property_type_trend = property_type_trend.rename(columns= {
+    'elec_efficiency':'Electricity',
+    'gas_efficiency':'Gas',
+    'ghg_efficiency':'Greenhouse Gas'
+})
+
+# Save it as a csv
+property_type_trend.to_csv("./shiny-app/property_trends/property_type_trend.csv")
+```
+
+
+!! DELETE BEFORE SUBMISSION !!
+5. **!! TESTING !!**
+```{python}
+# Testing Below 
 df_nontreatment = df[df['treated']==0]
 
 ave_usage = df_nontreatment.groupby(["year","property_type"], as_index = False)[["electricity","gas","ghg"]].mean()
+
+df_treatment = df[df['treated']==1]
+
+ave_usage_treated = df_treatment.groupby(["year","property_type"], as_index = False)[["electricity","gas","ghg"]].mean()
 ```
 
 ```{python}
@@ -111,18 +234,108 @@ print(ave_usage["property_type"].unique())
 ```{python}
 ave_usage_residential = ave_usage[ave_usage["property_type"]== "Multifamily Housing"]
 
-alt.Chart(ave_usage_residential).mark_line().encode(
+alt.Chart(ave_usage_residential, title = "non treated gas").mark_line(point = True).encode(
     alt.X("year:O"),
-    alt.Y("ghg:Q"),
+    alt.Y("gas:Q"),
 ).transform_filter(alt.datum.year >= 2017).properties(width = 500, height = 300)
 ```
 
 ```{python}
-alt.Chart(ave_usage).mark_line(point = True).encode(
+median_usage_treated = df_treatment.groupby(["year","property_type"], as_index = False)[["electricity","gas","ghg"]].median()
+
+median_usage_nontreated = df_nontreatment.groupby(["year","property_type"], as_index = False)[["electricity","gas","ghg"]].median()
+
+median_usage_nontreated_residential = median_usage_nontreated[median_usage_nontreated["property_type"]== "Multifamily Housing"]
+
+median_usage_treated_residential = median_usage_treated[median_usage_treated['property_type']== 'Multifamily Housing']
+```
+```{python}
+alt.Chart(ave_usage, title = "all property types ghg").mark_line(point = True).encode(
     alt.X("year:O"),
     alt.Y("ghg:Q"),
     alt.Color("property_type:N"),
     alt.Tooltip("property_type:N")
-).transform_filter(alt.datum.year >= 2017)
+).transform_filter(alt.datum.year >= 2017).properties(width = 500, height = 300)
 ```
-4. Shiny dynamic plots 2
+
+```{python}
+alt.Chart(median_usage_nontreated, title = "all property types ghg").mark_line(point = True).encode(
+    alt.X("year:O"),
+    alt.Y("ghg:Q"),
+    alt.Color("property_type:N"),
+    alt.Tooltip("property_type:N")
+).transform_filter(alt.datum.year >= 2017).properties(width = 500, height = 300)
+```
+```{python}
+ave_usage_residential_tr = ave_usage_treated[ave_usage_treated["property_type"]== "Multifamily Housing"]
+
+alt.Chart(ave_usage_residential_tr, title = "treated gas").mark_line(point = True).encode(
+    alt.X("year:O"),
+    alt.Y("gas:Q"),
+    alt.Color("property_type:N"),
+    alt.Tooltip("property_type:N")
+).transform_filter(alt.datum.year >= 2017).properties(width = 500, height = 300)
+```
+
+```{python}
+alt.Chart(median_usage_treated_residential, title = "median treated ghg").mark_line(point = True).encode(
+    alt.X("year:O"),
+    alt.Y("ghg:Q"),
+    alt.Color("property_type:N"),
+    alt.Tooltip("property_type:N")
+).transform_filter(alt.datum.year >= 2017).properties(width = 500, height = 300)
+```
+
+```{python}
+building_age_usage = df_2022.groupby(["built_year_bin"])[["electricity","gas","ghg"]].mean().reset_index()
+
+alt.Chart(building_age_usage).mark_bar().encode(
+    alt.X("built_year_bin:N"),
+    alt.Y("ghg:Q")
+)
+```
+
+MORE TESTING
+
+```{python}
+#Load map
+file_path = "./shiny-app/chicago-boundaries.geojson"
+
+with open(file_path) as f:
+    chicago_geojson = json.load(f)
+
+geo_data = alt.Data(values=chicago_geojson["features"])
+```
+
+```{python}
+# Create plot for background
+background = alt.Chart(geo_data).mark_geoshape(
+    fill='lightgrey',
+    stroke='white').project(type='equirectangular').properties(width=500, height=300)
+```
+
+```{python}
+# Map out the points for top 100 ghg emitting buildings
+points = alt.Chart(top_ghg).mark_circle(size=10).encode(
+    longitude='lon_bin:Q',
+    latitude='lat_bin:Q',
+    color = 'property_type:N',
+    tooltip = 'property_type:N'
+).project(type='equirectangular').properties(
+    width=500,
+    height=300
+)
+
+layered_chart = background + points
+layered_chart
+```
+
+```{python}
+top_ghg_property_types = top_ghg['property_type'].value_counts().head(10).reset_index()
+print(top_ghg_property_types)
+#top_elec_property_types = top_elec['property_type'].value_counts()
+#print(top_elec_property_types)
+#top_gas_property_types = top_gas['property_type'].value_counts()
+#print(top_gas_property_types)
+```
+
