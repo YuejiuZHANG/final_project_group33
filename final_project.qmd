@@ -27,7 +27,9 @@ import json
 
 import geopandas as gpd
 from shapely.geometry import Point
+from shapely import wkt
 import matplotlib.pyplot as plt
+import numpy as np
 ```
 
 
@@ -38,6 +40,9 @@ import matplotlib.pyplot as plt
 # Loading the Data
 df_building = pd.read_csv("data/Chicago_Energy_Benchmarking_-_Covered_Buildings_20240715.csv")
 df_energy = pd.read_csv("data/Chicago_Energy_Benchmarking_20240715.csv")
+
+chicago_communities = pd.read_csv('data/CommAreas_20241130.csv')
+chicago_communities['the_geom'] = chicago_communities['the_geom'].apply(wkt.loads)
 ```
 
 ```{python}
@@ -131,17 +136,159 @@ df_clean_2022 = df_clean[df_clean['year']==2022]
 2. Build Geopanda Graphs by Year
 
 ```{python}
-# Create geometry points using longitude and latitude
-geometry = [Point(xy) for xy in zip(df['longitude'], df['latitude'])]
+## 1. GHG plot
+fig, axes = plt.subplots(1, 2, figsize=(20, 8), sharex=True, sharey=True)  # Create 1x2 grid with shared axes
 
-# Create a GeoDataFrame
-gdf = gpd.GeoDataFrame(df, geometry=geometry)
+# Data for 2017
+df_2017 = df[df['year'] == 2017]
+geoplot_2017 = df_2017.groupby('community')[['ghg', 'treated']].mean().reset_index()
+geoplot_2017 = geoplot_2017.merge(chicago_communities, left_on='community', right_on='COMMUNITY', how='left')
+geoplot_2017 = gpd.GeoDataFrame(geoplot_2017, geometry='the_geom')
 
-# Set a CRS (Coordinate Reference System)
-gdf.set_crs(epsg=4326, inplace=True)  # WGS84 CRS
+# Plot for 2017
+geoplot_2017.plot(
+    column="ghg",
+    cmap="Greens",
+    legend=False,
+    edgecolor="black",
+    linewidth=0.5,
+    ax=axes[0]
+)
+axes[0].set_title("2017", fontsize=14, fontweight='bold')
+axes[0].set_axis_off()
 
-# Plot the GeoDataFrame
-gdf.plot(column='ghg', cmap='coolwarm', legend=True, figsize=(10, 6))
+# Data for 2022
+df_2022 = df[df['year'] == 2022]
+geoplot_2022 = df_2022.groupby('community')[['ghg', 'treated']].mean().reset_index()
+geoplot_2022 = geoplot_2022.merge(chicago_communities, left_on='community', right_on='COMMUNITY', how='left')
+geoplot_2022 = gpd.GeoDataFrame(geoplot_2022, geometry='the_geom')
+
+# Plot for 2022
+geoplot_2022.plot(
+    column="ghg",
+    cmap="Greens",
+    legend=False,
+    edgecolor="black",
+    linewidth=0.5,
+    ax=axes[1]
+)
+axes[1].set_title("2022", fontsize=14, fontweight='bold')
+axes[1].set_axis_off()
+
+# Add title
+fig.suptitle("Greenhouse Gas Emissions by Community (2017 vs 2022)", 
+             fontsize=18, fontweight='bold')
+
+# Add legend
+legend = plt.cm.ScalarMappable(cmap="Greens", norm=plt.Normalize(vmin=min(geoplot_2017['ghg'].min(), geoplot_2022['ghg'].min()), vmax=max(geoplot_2017['ghg'].max(), geoplot_2022['ghg'].max())))
+
+# Adjust legend position
+cbar = fig.colorbar(legend, ax=axes).set_label("Average Greenhouse Gas Emissions (Metric Tons CO2)", fontsize=12)
+
+```
+
+```{python}
+## 2. Electricity plot
+fig, axes = plt.subplots(1, 2, figsize=(20, 8), sharex=True, sharey=True)  # Create 1x2 grid with shared axes
+
+# Data for 2017
+df_2017 = df[df['year'] == 2017]
+geoplot_2017 = df_2017.groupby('community')[['electricity', 'treated']].mean().reset_index()
+geoplot_2017 = geoplot_2017.merge(chicago_communities, left_on='community', right_on='COMMUNITY', how='left')
+geoplot_2017 = gpd.GeoDataFrame(geoplot_2017, geometry='the_geom')
+
+# Plot for 2017
+geoplot_2017.plot(
+    column="electricity",
+    cmap="Blues",
+    legend=False,
+    edgecolor="black",
+    linewidth=0.5,
+    ax=axes[0]
+)
+axes[0].set_title("2017", fontsize=14, fontweight='bold')
+axes[0].set_axis_off()
+
+# Data for 2022
+df_2022 = df[df['year'] == 2022]
+geoplot_2022 = df_2022.groupby('community')[['electricity', 'treated']].mean().reset_index()
+geoplot_2022 = geoplot_2022.merge(chicago_communities, left_on='community', right_on='COMMUNITY', how='left')
+geoplot_2022 = gpd.GeoDataFrame(geoplot_2022, geometry='the_geom')
+
+# Plot for 2022
+geoplot_2022.plot(
+    column="electricity",
+    cmap="Blues",
+    legend=False,
+    edgecolor="black",
+    linewidth=0.5,
+    ax=axes[1]
+)
+axes[1].set_title("2022", fontsize=14, fontweight='bold')
+axes[1].set_axis_off()
+
+# Add title
+fig.suptitle("Electricity Usage by Community (2017 vs 2022)", 
+             fontsize=18, fontweight='bold')
+
+# Add legend
+legend = plt.cm.ScalarMappable(cmap="Blues", norm=plt.Normalize(vmin=min(geoplot_2017['electricity'].min(), geoplot_2022['electricity'].min()), vmax=max(geoplot_2017['electricity'].max(), geoplot_2022['electricity'].max())))
+
+# Adjust legend position
+cbar = fig.colorbar(legend, ax=axes).set_label("Average Electricity Usage", fontsize=12)
+
+```
+
+```{python}
+## 3. Gas plot
+fig, axes = plt.subplots(1, 2, figsize=(20, 8), sharex=True, sharey=True)  # Create 1x2 grid with shared axes
+
+# Data for 2017
+df_2017 = df[df['year'] == 2017]
+geoplot_2017 = df_2017.groupby('community')[['gas', 'treated']].mean().reset_index()
+geoplot_2017 = geoplot_2017.merge(chicago_communities, left_on='community', right_on='COMMUNITY', how='left')
+geoplot_2017 = gpd.GeoDataFrame(geoplot_2017, geometry='the_geom')
+
+# Plot for 2017
+geoplot_2017.plot(
+    column="gas",
+    cmap="Reds",
+    legend=False,
+    edgecolor="black",
+    linewidth=0.5,
+    ax=axes[0]
+)
+axes[0].set_title("2017", fontsize=14, fontweight='bold')
+axes[0].set_axis_off()
+
+# Data for 2022
+df_2022 = df[df['year'] == 2022]
+geoplot_2022 = df_2022.groupby('community')[['gas', 'treated']].mean().reset_index()
+geoplot_2022 = geoplot_2022.merge(chicago_communities, left_on='community', right_on='COMMUNITY', how='left')
+geoplot_2022 = gpd.GeoDataFrame(geoplot_2022, geometry='the_geom')
+
+# Plot for 2022
+geoplot_2022.plot(
+    column="gas",
+    cmap="Reds",
+    legend=False,
+    edgecolor="black",
+    linewidth=0.5,
+    ax=axes[1]
+)
+axes[1].set_title("2022", fontsize=14, fontweight='bold')
+axes[1].set_axis_off()
+
+# Add title
+fig.suptitle("Gas Usage by Community (2017 vs 2022)", 
+             fontsize=18, fontweight='bold')
+
+# Add legend
+legend = plt.cm.ScalarMappable(cmap="Reds", norm=plt.Normalize(vmin=min(geoplot_2017['gas'].min(), geoplot_2022['gas'].min()), vmax=max(geoplot_2017['gas'].max(), geoplot_2022['gas'].max())))
+
+# Adjust legend position
+cbar = fig.colorbar(legend, ax=axes).set_label("Average Gas Usage", fontsize=12)
+
 ```
 
 2.1 Dynamic altair maps 
