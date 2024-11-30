@@ -1,6 +1,9 @@
 # Ignore specific file types
 *.venv
 
+# Ignore all .DS_Store files recursively
+**/.DS_Store
+
 # Allow .gitignore itself
 !.gitignore
 
