@@ -6,9 +6,10 @@ import json
 
 app_ui = ui.page_fluid(
     ui.panel_title("Distribution of the Top 3 Least Efficient Building Types in 2022"),
-    ui.input_select(id='efficiency_type', label='Select Efficiency Metric',
-                    choices=['Electricity','Gas','Greenhouse Gas'],
-                    selected='Greenhouse Gas'),
+    ui.input_select(id = 'efficiency_type', 
+                    label = 'Select Efficiency Metric',
+                    choices = ['Electricity','Gas','Greenhouse Gas'],
+                    selected = 'Greenhouse Gas'),
     ui.input_checkbox("show", "Show Data"),
     ui.row(
         ui.column(8, 
@@ -48,20 +49,20 @@ def server(input, output, session):
         #Create background
         background = alt.Chart(geo_data).mark_geoshape(
             fill='lightgrey',stroke='white'
-            ).project(type='equirectangular'
+            ).project(type = 'equirectangular'
                       ).properties(
-                width=700, height=500)
+                width = 700, height = 500)
         
         #Overlay with datapoints
         points = alt.Chart(filtered_data, title = "Map of Chicago").mark_circle(size=15).encode(
-            longitude='lon_bin:Q',
-            latitude='lat_bin:Q',
-            color=alt.Color("property_type:N", 
-                    sort=top_3_list,
-                    legend=alt.Legend(title="Property Type")),
+            longitude = 'lon_bin:Q',
+            latitude = 'lat_bin:Q',
+            color = alt.Color("property_type:N", 
+                    sort = top_3_list,
+                    legend = alt.Legend(title = "Property Type")),
             tooltip = ['property_type:N', 'community:N']).project(
-                type='equirectangular').properties(
-                    width=700,height=500)
+                type = 'equirectangular').properties(
+                    width = 700,height = 500)
         
         layered_chart = background + points
 
@@ -71,7 +72,7 @@ def server(input, output, session):
     def top10_table():
         df = subsetted_data()
         top10 = df['property_type'].value_counts().head(10).reset_index()
-        top10 = top10.rename(columns={
+        top10 = top10.rename(columns = {
             'property_type':'Top 10 Property Types' ,
             'count':'Count (Out of 500 Least Efficient Buildings)'
         })

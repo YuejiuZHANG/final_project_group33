@@ -5,12 +5,12 @@ import pandas as pd
 
 app_ui = ui.page_fluid(
     ui.panel_title("Energy Efficiency by Community"),
-    ui.input_select(id="community", label='Choose a Community',
-                    choices=[]),
-    ui.input_select(id='efficiency_type', 
-                    label='Choose an Efficiency Type',
-                    choices=['Electricity','Gas','Greenhouse Gas'],
-                    selected='Greenhouse Gas'), 
+    ui.input_select(id = "community", label='Choose a Community',
+                    choices = []),
+    ui.input_select(id = 'efficiency_type', 
+                    label = 'Choose an Efficiency Type',
+                    choices = ['Electricity','Gas','Greenhouse Gas'],
+                    selected = 'Greenhouse Gas'), 
     ui.input_checkbox("show", "Show Data"),
     ui.row(
         ui.column(6, 
@@ -66,7 +66,7 @@ def server(input, output, session):
 
         chart = alt.Chart(chart_data).mark_line().encode(
             alt.X("year:O"),
-            alt.Y("value:Q").axis(title=f"{selected_emission}")
+            alt.Y("value:Q").axis(title = f"{selected_emission}")
             ).properties(width = 500, height = 300)
         
         return chart
