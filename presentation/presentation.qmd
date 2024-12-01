@@ -62,7 +62,7 @@ To evaluate the effectiveness and necessity of Chicago's evolving climate polici
 ## Challenge 
 - The dataset only contained 8,113 parcel-level observations—about 1% of Chicago's buildings
 
-- Data inconsistencies accour, such as missing or incorrect values, which required substantial preprocessing to ensure accurate results.
+- Data inconsistencies occur, such as missing or incorrect values, which required substantial preprocessing to ensure accurate results.
 
 - **Solusion** 
   - we concentrated on **identifying overarching trends**, using an efficiency metric derived from the available data.
