@@ -26,7 +26,9 @@ Partern 3: Yuliana Zhang (Github ID: YuejiuZHANG): coding adjustment, writeup an
 
 # Research Question
 
-In 2008, Chicago adopted the Chicago Climate Action Plan (CCAP), which aimed to reduce the city's greenhouse gas emissions by 25% compared to 1990 levels by 2020. Initially, adaptive strategies were implemented, such as the installation of green roofs and reflective roofs on buildings. These measures aimed to reduce heat absorption, enhance urban cooling, and provide immediate relief from rising temperatures. However, the city claimed that these actions as temporary solutions and in 2020, Chicago launched the Chicago Retrofit Roadmap, a three-year project to reduce carbon emissions at their source.
+In recent years, unprecedented climate changes, particularly extreme heat, have affected regions across the globe. In the United States, extreme heat has scorched much of the country, rapidly increasing heat-related deaths. This alarming trend highlights the urgent need for effective response measures. Chicago, one of the cities impacted, has been developing climate strategies under the leadership of the Mayor’s Office since 2008 to mitigate the effects of extreme heat.
+
+In 2008, Chicago adopted the Chicago Climate Action Plan (CCAP), which aimed to reduce the city's greenhouse gas emissions by 25% compared to 1990 levels by 2020. Initially, adaptive strategies were implemented, such as the installation of green roofs and reflective roofs on buildings. These measures aimed to reduce heat absorption, enhance urban cooling, and provide immediate relief from rising temperatures. However, the city recognized these actions as temporary solutions. In 2020, Chicago launched the Chicago Retrofit Roadmap, a three-year project to reduce carbon emissions at their source.
 
 To evaluate the effectiveness and necessity of Chicago's evolving climate policies, our research seeks to answer the following questions:
 
@@ -94,7 +96,9 @@ html_code = """
 # Display the HTML
 display(HTML(html_code))
 ```
-From these two Shiny apps, we observed that most of the communities' GHG emissions were reduced from 2017 to 2022, and 2020-2022 reduced more sharply than 2017-2020. This implicated that both the 2008 CCAP and Chicago Retrofit maps work. Besides,as the second Shiny app cannot clearly show the patterns as it lacks data on some property types, and most trends are increasing, we filtered the top 500 least efficient buildings. Through this new Shiny app, we can clearly see that multifamily housing, offices, and K12 Schools are the top 3 least efficient property types.
+From these two Shiny apps, we observed that most of the communities' GHG emissions were reduced from 2017 to 2022, and 2020-2022 reduced more sharply than 2017-2020. This implicated that both the 2008 CCAP and Chicago Retrofit maps work. However, it is hard to see if the Chicago Retrofit Roadmap can provide sustainable long-term solutions due to the lack of data after 2022. 
+
+Besides, the second Shiny app cannot clearly show the patterns as it lacks data on some property types, and most trends are increasing. Thus, we filtered the top 500 least efficient buildings. Through this new Shiny app, we can clearly see that multifamily housing, offices, and K12 Schools are the top 3 least efficient property types.
 ```{python}
 #| echo: false 
 from IPython.display import Image
@@ -102,4 +106,8 @@ Image("pictures/shiny_3.png")
 ```
 # Further Discussion for Furture Work
 
-For future improvements, we plan to expand our dataset to include more building types and data beyond 2022 to further explore the impact of the Chicago Retrofit Roadmap. Additionally, we aim to acquire 1990 data to assess whether the 2020 levels of emissions and energy usage are indeed 25% of those in 1990, as outlined in Chicago's climate goals. Furthermore, we need to develop a more sophisticated model to better distinguish the effects of the 2008 CCAP and the Chicago Retrofit Roadmap, ensuring that we can accurately attribute observed changes to each initiative. This will help us more precisely evaluate the effectiveness of these policies and provide more targeted recommendations for future climate action.
+For future improvements, we plan to expand our dataset to include more building types and data beyond 2022 to further explore the impact of the Chicago Retrofit Roadmap. Additionally, we aim to acquire historical data from 1990 to assess whether the 2020 levels of emissions and energy usage are indeed 25% of those in 1990, as outlined in Chicago's climate goals. Furthermore, we need to develop a more sophisticated model to better distinguish the effects of the 2008 CCAP and the Chicago Retrofit Roadmap, ensuring that we can accurately attribute observed changes to each initiative. This will help us more precisely evaluate the effectiveness of these policies and provide more targeted recommendations for future climate action.
+
+
+
+For example, the graph for Hyde Park's greenhouse gas efficiency shows fluctuations between 2017 and 2022. The GHG efficiency increased from 2017 to 2019, followed by a drop in 2020, which may be attributed to the pandemic's impact. The efficiency then rose again from 2021 to 2022, suggesting potential improvements due to energy policies or building retrofits.

@@ -4,6 +4,9 @@
 # Ignore all .DS_Store files recursively
 **/.DS_Store
 
+# Ignore write_up_files/
+write_up_files/
+
 # Allow .gitignore itself
 !.gitignore
 
