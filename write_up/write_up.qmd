@@ -20,29 +20,29 @@ execute:
 
 Partern 1: Dale Jin (Github ID: dalejin86): data cleaning and choropleth plot
 
-Partern 2: Katherine Tu (Github ID: kattu1): dynamic plots
+Partern 2: Katherine Tu (Github ID: kattu1): data cleaning and dynamic plots
 
 Partern 3: Yuliana Zhang (Github ID: YuejiuZHANG): coding adjustment, writeup and repository management
 
 # Research Question
 
-In 2008, Chicago adopted the Chicago Climate Action Plan (CCAP), which aimed to reduce the city's greenhouse gas emissions by 25% compared to 1990 levels by 2020. Initially, adaptive strategies were implemented, such as the installation of green roofs and reflective roofs on buildings. These measures aimed to reduce heat absorption, enhance urban cooling, and provide immediate relief from rising temperatures. However, the city claimed that these actions as temporary solutions and in 2020, Chicago launched the Chicago Retrofit Roadmap, a three-year project to reduce carbon emissions at their source.
+In 2008, Chicago adopted the Chicago Climate Action Plan (CCAP) to reduce greenhouse gas emissions by 25% from 1990 levels by 2020. Initially, adaptive strategies like green and reflective roofs were implemented to reduce heat absorption and provide urban cooling. These measures were temporary, leading to the launch of the Chicago Retrofit Roadmap in 2020—a three-year project to cut emissions at their source.
 
-To evaluate the effectiveness and necessity of Chicago's evolving climate policies, our research seeks to answer the following questions:
+To evaluate the effectiveness and necessity of Chicago's evolving climate policies, our research aims to answer:
 
 * Did the 2008 CCAP continually reduce Chicago's greenhouse gas emissions before 2020?
 
-* Can the Chicago Retrofit Roadmap further reduce carbon emissions and provide sustainable long-term solutions?
+* Can the Chicago Retrofit Roadmap further reduce emissions and provide long-term solutions?
 
 # Research Method And Coding Instructions
 
-To address the research questions, we aimed to uncover trends in greenhouse gas emissions, electricity usage, and natural gas consumption in Chicago. We used data visualizations to evaluate the impact of the 2008 Climate Action Plan (CCAP) before 2020 and the Chicago Retrofit Program after 2020.
+To address these questions, we analyzed trends in greenhouse gas emissions, electricity use, and natural gas use in Chicago, focusing on data from 2017 to 2022 to assess the impact of CCAP before 2020 and the Retrofit Roadmap after.
 
-Due to limited public data, we used the Chicago Energy Benchmarking Report, which contains self-reported energy data from existing buildings, collected annually since 2014. Our analysis focused on data from 2017 to 2022 to easily divide trends into three years before and after 2020. Since the dataset only contained 8,113 parcel-level observations—about 1% of Chicago's buildings—we concentrated on identifying overarching trends, using an efficiency metric derived from the available data.
+Due to limited public data, we only used the Chicago Energy Benchmarking Report, which provides annual self-reported energy data for Chicago buildings since 2014. Since the dataset only contained 8,113 parcel-level observations—about 1% of Chicago's buildings—we concentrated on identifying overarching trends, using an efficiency metric derived from the available data.
 
-We started the coding process by loading and merging multiple datasets, then filtered and renamed columns to standardize variable names for easier analysis. Data cleaning included handling missing values, standardizing community names, and creating new metrics like efficiency based on energy usage and floor area. We also binned geographical coordinates to facilitate spatial analysis.
+We began by merging datasets, cleaning data, and standardizing variables for easier analysis. Data cleaning involved handling missing values, standardizing community names, and creating efficiency metrics. We binned geographic coordinates to facilitate spatial analysis.
 
-After data cleaning, we generated geometric maps of greenhouse gas emissions, gas consumption, and electricity consumption in Chicago by communities for 2017 and 2022 to observe changes. We also created a dynamic plot to visualize community-level trends from 2017 to 2022 by property types. However, while conducting this plot, a significant challenge was managing data inconsistencies, such as missing or incorrect values, which required substantial preprocessing to ensure accurate results. Although we finally successfully drew this plot, we could not sum up any trends. To investigate patterns further, we additionally filtered the top 500 least efficient buildings and mapped them to identify property types of concerns.
+After cleaning, we created maps to visualize changes in greenhouse gas emissions, gas consumption, and electricity usage between 2017 and 2022, and dynamic plots to explore yearly trends by community and property type. A major challenge was dealing with data inconsistencies, requiring substantial preprocessing to ensure accuracy. Besides, due to the complicated data collecting process itsself, we could not sum up any trends by property type. Thus, to further explore patterns, we identified the 500 least efficient buildings and mapped their property types to highlight areas of concern.
 
 # Results
 
@@ -85,16 +85,18 @@ image_paths = ["pictures/ghg_com_1.png", "pictures/ghg_pro_2.png", "pictures/ghg
 # Customize the HTML code to display images inline with specific sizes
 html_code = """
 <div style="display: flex; justify-content: space-evenly;">
-    <img src="{}" style="width: 250px; height: auto;">
-    <img src="{}" style="width: 250px; height: auto;">
-    <img src="{}" style="width: 250px; height: auto;">
+    <img src="{}" style="width: 220px; height: 220px;">
+    <img src="{}" style="width: 220px; height: 220px;">
+    <img src="{}" style="width: 220px; height: 220px;">
 </div>
 """.format(image_paths[0], image_paths[1],image_paths[2])
 
 # Display the HTML
 display(HTML(html_code))
 ```
+
 From these two Shiny apps, we observed that most of the communities' GHG emissions were reduced from 2017 to 2022, and 2020-2022 reduced more sharply than 2017-2020. This implicated that both the 2008 CCAP and Chicago Retrofit maps work. Besides,as the second Shiny app cannot clearly show the patterns as it lacks data on some property types, and most trends are increasing, we filtered the top 500 least efficient buildings. Through this new Shiny app, we can clearly see that multifamily housing, offices, and K12 Schools are the top 3 least efficient property types.
+
 ```{python}
 #| echo: false 
 from IPython.display import Image
