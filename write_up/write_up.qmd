@@ -1,7 +1,5 @@
 ---
-title: "Problem Set 1: Parking Tickets"
-author: "Yuejiu (Yuliana) Zhang"
-date: "Oct 4"
+title: "30538 Final Project: Group 33"
 format: 
   html:
     code-fold: false
@@ -10,317 +8,100 @@ execute:
   eval: true
   echo: true
 ---
+<!--
+    beamer:
+        echo: true
+        toc: true
+        aspectratio: 169
+        theme: default
+        header-includes: \renewcommand{\tightlist}{\setlength{\itemsep}{5ex}\setlength{\parskip}{0pt}}
+            \setbeamertemplate{footline}[frame number] 
+            -->
 
-1. **PS1:** Due Sat Oct 5 at 5:00PM Central. Worth 50 points. Initiate your **[repo](https://classroom.github.com/a/uhUVze3Y)** 
+Partern 1: Dale Jin (Github ID: dalejin86): data cleaning and choropleth plot
 
-We use (`*`) to indicate a problem that we think might be time consuming. 
+Partern 2: Katherine Tu (Github ID: kattu1): data cleaning and dynamic plots
 
-Steps to submit (5 points on PS1 and 10 points on PS2)
+Partern 3: Yuliana Zhang (Github ID: YuejiuZHANG): coding adjustment, writeup and repository management
 
-1. "This submission is my work alone and complies with the 30538 integrity policy." Add your initials to indicate your agreement: \*\* YZ \*\*
-2. "I have uploaded the names of anyone I worked with on the problem set **[here](https://docs.google.com/forms/d/1-zzHx762odGlpVWtgdIC55vqF-j3gqdAp6Pno1rIGK0/edit)**" \*\* Yuanhao Jin \*\* (1 point)
-3. Late coins used this pset: \*\* 1 \*\* Late coins left after submission: \*\* 3 \*\*
-4. Knit your `ps1.qmd` to make `ps1.pdf`. 
-    * The PDF should not be more than 25 pages. Use `head()` and re-size figures when appropriate. 
-5. Push  `ps1.qmd` and `ps1.pdf` to your github repo. It is fine to use Github Desktop.
-6. Submit `ps1.pdf` via Gradescope (4 points) 
-7. Tag your submission in Gradescope
+# Research Question
 
-# Part 1
-## Read in one percent sample (15 Points)
+In 2008, Chicago adopted the Chicago Climate Action Plan (CCAP) to reduce greenhouse gas emissions by 25% from 1990 levels by 2020. Initially, adaptive strategies like green and reflective roofs were implemented to reduce heat absorption and provide urban cooling. These measures were temporary, leading to the launch of the Chicago Retrofit Roadmap in 2020—a three-year project to cut emissions at their source.
 
-```{python} 
-# For preperation, load library and path of CSV file
-import pandas as pd
-import altair as alt
-import os
-import warnings 
-warnings.filterwarnings("ignore")
+To evaluate the effectiveness and necessity of Chicago's evolving climate policies, our research aims to answer:
 
-# Local path
-path = r"/Users/yuejiuzhang/Documents/Uchicago/PPHA30538/ppha30538_fall2024/problem_sets/ps1/data/"
-```
+* Did the 2008 CCAP continually reduce Chicago's greenhouse gas emissions before 2020?
 
-```{python}
-# File path
-tickets = r"parking_tickets_one_percent.csv"
-path_tickets = os.path.join(path, tickets)
-```
+* Can the Chicago Retrofit Roadmap further reduce emissions and provide long-term solutions?
 
-### Question 1
-```{python}
-# Use time to measure the time-efficiency of opening the CSV file in python
-# Ref from "https://medium.com/casual-inference/the-most-time-efficient-ways-to-import-csv-data-in-python-cc159b44063d"
-import time
+# Research Method And Coding Instructions
 
-def load_and_validate_csv(file_path, expected_rows):
-    # Use time to measure the time-efficiency of opening the CSV file in python
-    start_time = time.time()
-    df = pd.read_csv(file_path)
-    load_time = time.time() - start_time
-    print(f"Loading this CSV file took {load_time} seconds.")
-    
-    # Use the assert Statement to make sure there are 287458 rows
-    # Ref from "https://www.datacamp.com/tutorial/understanding-the-python-assert-statement"
-    assert len(df) == expected_rows, f"This CSV file does not have {expected_rows} rows."
-    print("This CSV file successfully complies with the correct number of rows.")
-    return df
+To address these questions, we analyzed trends in greenhouse gas emissions, electricity use, and natural gas use in Chicago, focusing on data from 2017 to 2022 to assess the impact of CCAP before 2020 and the Retrofit Roadmap after.
 
-tickets_df = load_and_validate_csv(path_tickets, 287458)
-```
+Due to limited public data, we only used the Chicago Energy Benchmarking Report, which provides annual self-reported energy data for Chicago buildings since 2014. Since the dataset only contained 8,113 parcel-level observations—about 1% of Chicago's buildings—we concentrated on identifying overarching trends, using an efficiency metric derived from the available data.
 
-### Question 2
-```{python}
-# Define a function calculate how many megabytes is the CSV file
-# Ref from "https://www.digitalocean.com/community/tutorials/how-to-get-file-size-in-python"
-def get_file_size(file_path):
-    file_size = os.path.getsize(file_path)
-    file_size_mb = file_size / (1024 * 1024)
-    return file_size_mb
+We began by merging datasets, cleaning data, and standardizing variables for easier analysis. Data cleaning involved handling missing values, standardizing community names, and creating efficiency metrics. We binned geographic coordinates to facilitate spatial analysis.
 
-my_file_size = get_file_size(path_tickets)
-print(f"The size of this CSV file is: {my_file_size} MB")
+After cleaning, we created maps to visualize changes in greenhouse gas emissions, gas consumption, and electricity usage between 2017 and 2022, and dynamic plots to explore yearly trends by community and property type. A major challenge was dealing with data inconsistencies, requiring substantial preprocessing to ensure accuracy. Besides, due to the complicated data collecting process itsself, we could not sum up any trends by property type. Thus, to further explore patterns, we identified the 500 least efficient buildings and mapped their property types to highlight areas of concern.
 
-# As the sample data set is about one percent of the full data set
-# The full data set is 100 times of the sample data set
-print(f"The size of the full data set is: {100*my_file_size} MB")
-```
-
-### Question 3
-
-By observation, the data is sorted by issue_date.
+# Results
 
 ```{python}
-# Use a for loop to find which column is sorted by default
-# Ref from "https://stackoverflow.com/questions/28419877/check-whether-non-index-column-sorted-in-pandas"
-for col in tickets_df.columns:
-    if tickets_df[col].is_monotonic_increasing or tickets_df[col].is_monotonic_decreasing:
-        sorted_column = col
-        print(f"Data is sorted by the column: {sorted_column}")
-        break
-
-# Subset the dataset to the first 500 rows
-subset_df = tickets_df.head(500)
-
-# Write a function that tests if the column is ordered in the subset
-def is_column_ordered(subset_df, col):
-    if subset_df[col].is_monotonic_increasing or subset_df[col].is_monotonic_decreasing:
-        ordered_col = col
-        print(f"The column '{ordered_col}' is ordered in the subset.")
-    else:
-        print(f"The column '{col}' is not ordered in the subset.")
-
-is_column_ordered(subset_df, sorted_column)
+#| echo: false 
+from IPython.display import Image
+Image("pictures/ghg.png")
 ```
 
-But I still want to check my assumption that whether the CSV file is sorted by issue_date.
+Our main focus, the greenhouse gas emissions map, demonstrates a decrease in emissions from 2017 to 2022 across various communities, especially in areas like the Loop. This suggests that the 2008 CCAP and the Chicago Retrofit Roadmap initiatives to curb emissions have been somewhat effective, though several communities still need more targeted interventions to achieve substantial reductions. Similar results can also be drawn from gas and electric consumption. These three independent variables have almost the same pattern between the graphs from 2017 and 2022.
 
 ```{python}
-is_column_ordered(subset_df, "issue_date")
+#| echo: false 
+from IPython.display import display, HTML
+
+# Specify the paths to your images
+image_paths = ["pictures/gas.png", "pictures/elec.png"]
+
+# Customize the HTML code to display images inline with specific sizes
+html_code = """
+<div style="display: flex; justify-content: space-evenly;">
+    <img src="{}" style="width: 350px; height: auto;">
+    <img src="{}" style="width: 350px; height: auto;">
+</div>
+""".format(image_paths[0], image_paths[1])
+
+# Display the HTML
+display(HTML(html_code))
 ```
 
-# Part 2
-## Cleaning the data and benchmarking (15 Points)
-
-### Question 1
-```{python}
-# Convert the "issue_date'"" column to datetime format
-tickets_df["issue_date"] = pd.to_datetime(tickets_df["issue_date"])
-
-# Extract the year from the 'issue_date' column and create a new column 'year'
-tickets_df["year"] = tickets_df['issue_date'].dt.year
-
-# Select a subset that tickets were issued in the data in 2017
-selected_df = tickets_df[tickets_df["year"]==2017]
-tickets_in_2017 = len(selected_df)
-print(f"There are {tickets_in_2017} tickets issued in 2017 in the sample data set")
-print(f"There are {100*tickets_in_2017} tickets issued in 2017 in the full data set")
-```
-
-According to the article (ref from "https://features.propublica.org/driven-into-debt/chicago-ticket-debt-bankruptcy/"), "Each year, the City of Chicago issues more than 3 million tickets for a wide range of parking, vehicle compliance and automated traffic camera violations, from $25 citations for broken headlights to $250 tickets for parking in a disabled zone."
-
-There is a big difference between the implication and the actual number, which I think is meaningful. I guess the difference comes from the fact that the sample data does not cover all representatives or is not totally randomly selected.
-
-
-### Question 2
+We built two Shiny apps to explore energy efficiency trends across different communities and property types in Chicago. After selecting a specific community and an efficiency type (Electricity, Gas, or Greenhouse Gas), we can observe the corresponding line chart,  which shows the yearly changes in efficiency metrics from 2017 to 2022. The app also provides a data table next to the graph, displaying each year's efficiency values. 
 
 ```{python}
-# Pooling the top 20 most frequent violation types
-violation_top20 = tickets_df["violation_description"].value_counts().head(20).reset_index()
+#| echo: false 
+from IPython.display import display, HTML
 
-# Rename and change the type of data as it would not recognize to the chart
-violation_top20.columns = ["violation_type", "frequency"]
+# Specify the paths to your images
+image_paths = ["pictures/ghg_com_1.png", "pictures/ghg_pro_2.png", "pictures/ghg_pro_3.png"]
 
-# Here I used Chatgpt to help me debug as I cannot find why I fail to draw barchart without this step:
-violation_top20["violation_type"] = violation_top20["violation_type"].astype(str)
-violation_top20["frequency"] = violation_top20["frequency"].astype(int)
+# Customize the HTML code to display images inline with specific sizes
+html_code = """
+<div style="display: flex; justify-content: space-evenly;">
+    <img src="{}" style="width: 220px; height: 220px;">
+    <img src="{}" style="width: 220px; height: 220px;">
+    <img src="{}" style="width: 220px; height: 220px;">
+</div>
+""".format(image_paths[0], image_paths[1],image_paths[2])
 
-# Draw the bar chart using altair
-alt.Chart(violation_top20).mark_bar().encode(
-    alt.X("frequency:Q", axis = alt.Axis(title = "Frequency"), ),
-    #Change settings of label, ref from "https://stackoverflow.com/questions/71215156/how-to-wrap-axis-label-in-altair"
-    alt.Y("violation_type:N", sort = "-x", axis = alt.Axis(title = "Violation Type", maxExtent = 300, labelLimit = 300))
-    ).properties(
-        width = 400, 
-        height = 400, 
-        title = "Top 20 Most Frequent Violation Types",
-)
-
+# Display the HTML
+display(HTML(html_code))
 ```
 
-## Visual Encoding (15 Points)
-
-### Questions 1
+From these two Shiny apps, we observed that most of the communities' GHG emissions were reduced from 2017 to 2022, and 2020-2022 reduced more sharply than 2017-2020. This implicated that both the 2008 CCAP and Chicago Retrofit maps work. Besides,as the second Shiny app cannot clearly show the patterns as it lacks data on some property types, and most trends are increasing, we filtered the top 500 least efficient buildings. Through this new Shiny app, we can clearly see that multifamily housing, offices, and K12 Schools are the top 3 least efficient property types.
 
 ```{python}
-# Manually input the dataframe
-df = pd.DataFrame([
-    ["ticket_number", "N"],
-    ["issue_date", "T"],
-    ["violation_location", "N"],
-    ["license_plate_number", "N"],
-    ["license_plate_state", "N"],
-    ["license_plate_type", "N"],
-    ["zipcode", "N"],
-    ["violation_code", "N"],
-    ["violation_description", "N"],
-    ["unit", "N"],
-    ["unit_description", "N"],
-    ["vehicle_make", "N"],
-    ["fine_level1_amount", "Q"],
-    ["fine_level2_amount", "Q"],
-    ["current_amount_due", "Q"],
-    ["total_payments", "Q"],
-    ["ticket_queue", "N"],
-    ["ticket_queue_date", "T"],
-    ["notice_level", "N"],
-    ["hearing_disposition", "N"],
-    ["notice_number", "N"],
-    ["officer", "N"],
-    ["address", "N"]
-])
-
-# Name columns
-df.columns = ["Variable Name", "Data Type"]
-
-# Convert dataframe to a markdown table
-markdown_table = df.to_markdown(index = False)
-print(markdown_table)
+#| echo: false 
+from IPython.display import Image
+Image("pictures/shiny_3.png")
 ```
+# Further Discussion for Furture Work
 
-### Questions 2
-
-```{python}
-## Find the fraction paid
-# Use "vehicle_make", "ticket_queue" from the full data set
-vehicle_df = tickets_df[["vehicle_make", "ticket_queue"]]
-
-# Group by vehicle_make to calculate the number of total tickets and paid_tickets
-total_tickets = vehicle_df.groupby("vehicle_make").size().reset_index(name = "total_tickets")
-
-paid_tickets = vehicle_df[vehicle_df["ticket_queue"] == "Paid"].groupby("vehicle_make").size().reset_index(name = "paid_tickets")
-
-# Merge the two subsets to get paid fraction
-vehicle_paid_fraction_df = pd.merge(total_tickets, paid_tickets, on = "vehicle_make", how = "left")
-vehicle_paid_fraction_df["fraction_paid"] = vehicle_paid_fraction_df["paid_tickets"] / vehicle_paid_fraction_df["total_tickets"]
-
-## Draw the bar chart
-alt.Chart(vehicle_paid_fraction_df).mark_bar().encode(
-    alt.X("fraction_paid:Q", axis = alt.Axis(title = "Fraction of Paid Tickets")),
-    alt.Y("vehicle_make:N", axis = alt.Axis(title = "Vehicle Make"))
-    ).properties(
-        title = "Fraction of Paid Tickets by Vehicle Make", 
-        width = 500, 
-        height = 1200
-)
-```
-
-I observed that most luxury vehicle owners paid more than others. I guess the reason is that those vehicle owners are in good economic condition and always willing to pay these obligations on time.
-
-### Question 3
-
-As the sample graph used monthly data, I also use monthly data below:
-
-```{python}
-# Shape the time data to get year and month together for future use
-tickets_df["year_month"] = tickets_df["issue_date"].dt.strftime("%Y-%m")
-
-# Build new dataframe to store monthly tickets by groupby function
-tickets_over_time = tickets_df.groupby("year_month").size().reset_index(name = "monthly_tickets")
-
-# Draw the chart using the sample code provided
-alt.Chart(tickets_over_time).mark_area(
-    interpolate = "step-after",
-    line = True
-    ).encode(
-    alt.X("year_month:T", axis = alt.Axis(title = "Year")),
-    alt.Y("monthly_tickets:Q", axis = alt.Axis(title = "Real time tickets issued (by month)"))
-    ).properties(
-        title = "The Number of Tickets Issued Over Time", 
-        width = 500, 
-        height = 500
-)
-```
-
-### Question 4
-
-```{python}
-# Prepre for data as we need to use both month and day
-tickets_df["month"] = pd.to_datetime(tickets_df["issue_date"]).dt.month
-tickets_df["day"] = pd.to_datetime(tickets_df["issue_date"]).dt.day
-
-# Build new dataframe by groupby function and store the counted tickets
-tickets_date = tickets_df.groupby(["month", "day"]).size().reset_index(name = "count")
-
-# Draw the chart
-alt.Chart(tickets_date).mark_rect().encode(
-    alt.X("day:O").title("Day"),
-    alt.Y("month:O").title("Month"),
-    alt.Color("count:Q").title("Tickets"),
-    tooltip = [
-        alt.Tooltip("day", title = "Day"),
-        alt.Tooltip("month", title = "Month"),
-        alt.Tooltip("count", title = "Tickets"),
-    ]).properties(
-        title = "The Number of Tickets Issued by Month and Day", 
-        width = 500, 
-        height = 250
-)
-```
-
-### Question 5
-
-```{python}
-# Subset to the five most common types of violations
-violation_top5 = tickets_df["violation_description"].value_counts().head(5).reset_index()
-
-# Extract the top 5 types to a list so that we can filter only these types
-top5 = violation_top5["violation_description"].tolist()
-
-# Build new dataframe by filtering the top 5 data
-filtered_top5 = tickets_df[tickets_df["violation_description"].isin(top5)]
-tickets_top5 = filtered_top5.groupby(["violation_description", "year_month"]).size().reset_index(name = "count")
-
-# Draw the chart
-# The way to format yearmonth data is ref from https://github.com/vega/altair/issues/1951
-alt.Chart(tickets_top5).mark_rect().encode(
-    alt.X('yearmonth(year_month):O', title = "Year").axis(format = "%Y"),
-    alt.Y("violation_description:N").title(None),
-    alt.Color("count:Q").title("Count"),
-    ).properties(
-        title = "The Top 5 Number of Tickets Issued Over Time",
-        width = 500, 
-        height = 200
-)
-```
-
-### Question 6
-
-The plot for Question 3 is more like a real-time tickets issued map. It clearly shows historical data and trends over the years. However, it can only show the overall categories instead of showing which kinds of tickets are issued in real-time.
-
-The plot for Question 4 shows the day and month correlated issued information. This plot allows us to observe which specific day in each year has been issued the most and least tickets. However, a similar issue to the last plot is that we cannot observe the ticket type, and this plot is a little bit harder to read than the last one.
-
-The plot for Question 5 is a chart showing the top 5 common ticket types and the number of tickets issued over time. This plot allows us to observe both the number of tickets issued and the types over time. However, it does not clearly show the overall trend.
-
-### Question 7
-Personally, I will choose the plot from Question 4. If I want a reader to know the enforcement of violations is not evenly distributed over time, I would prefer to show them the number of tickets issued is not the same for each day or that there is no specific pattern of tickets issued. The plot from question 4 can satisfy this requirement as the number of tickets issued for all these years of each day varies. Although the Plot from Question 5 may also show the tickets issued over time, it does not give the total types as a whole. We can only observe the top 5 common types instead of all tickets.
+For future improvements, we plan to expand our dataset to include more building types and data beyond 2022 to further explore the impact of the Chicago Retrofit Roadmap. Additionally, we aim to acquire 1990 data to assess whether the 2020 levels of emissions and energy usage are indeed 25% of those in 1990, as outlined in Chicago's climate goals. Furthermore, we need to develop a more sophisticated model to better distinguish the effects of the 2008 CCAP and the Chicago Retrofit Roadmap, ensuring that we can accurately attribute observed changes to each initiative. This will help us more precisely evaluate the effectiveness of these policies and provide more targeted recommendations for future climate action.

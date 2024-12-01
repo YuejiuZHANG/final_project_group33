@@ -5,12 +5,13 @@ import pandas as pd
 
 app_ui = ui.page_fluid(
     ui.panel_title("Energy Efficiency by Property Type"),
-    ui.input_select(id='property', label='Choose a Property Type',
-                    choices=[]),
-    ui.input_select(id='efficiency_type', 
-                    label='Choose an Efficiency Type',
-                    choices=['Electricity','Gas','Greenhouse Gas'],
-                    selected='Greenhouse Gas'),
+    ui.input_select(id = 'property', 
+                    label = 'Choose a Property Type',
+                    choices = []),
+    ui.input_select(id = 'efficiency_type', 
+                    label = 'Choose an Efficiency Type',
+                    choices = ['Electricity','Gas','Greenhouse Gas'],
+                    selected = 'Greenhouse Gas'),
     ui.input_checkbox("show", "Show Data"),
     ui.row(
         ui.column(6, 
@@ -37,7 +38,7 @@ def server(input, output, session):
     def subsetted_data_table():
         df = subsetted_data()
         df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
-        df = df.reset_index(drop=True)
+        df = df.reset_index(drop = True)
 
         selected_emission = input.efficiency_type()
         rename_map = {
@@ -50,7 +51,7 @@ def server(input, output, session):
         columns_to_keep = ["year", selected_emission]
 
         df = df[columns_to_keep]
-        df = df.rename(columns={
+        df = df.rename(columns = {
             "year": rename_map["year"],
             selected_emission: rename_map[selected_emission]
         })
@@ -76,7 +77,7 @@ def server(input, output, session):
         df = full_data()
         types_list = df['property_type'].unique().tolist()
         types_list = sorted(types_list)
-        ui.update_select('property', choices=types_list)
+        ui.update_select('property', choices = types_list)
 
 
 app = App(app_ui, server)
