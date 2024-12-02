@@ -19,7 +19,7 @@ format:
 
 ## Policy Background
 
-- In recent years, unprecedented climate changes, particularly extreme heat, have affected regions across the globe. 
+- Over recent years, unprecedented climate changes, particularly extreme heat, have affected regions across the globe. 
 
 - In the United States, extreme heat has scorched much of the country, rapidly increasing heat-related deaths. 
 
@@ -70,13 +70,13 @@ To evaluate the effectiveness and necessity of Chicago's evolving climate polici
 # Results
 
 ## Geometric Maps
-As we want to see the overall change，we generated geometric maps of greenhouse gas emissions, gas consumption, and electricity consumption in Chicago communities for 2017 and 2022 to observe changes.
+Since we are focusing on the overall change, we generated 3 color-coded geometric maps of the intensities greenhouse gas emissions, gas consumption, and electricity consumption in Chicago communities for 2017 and 2022 to observe the differences.
 
-## `greenhouse gas emissions` map
+## `greenhouse gas emissions` 
 \vspace{-3ex}
 ![](pictures/ghg.png){ width=80% fig-align="center"}
 
-- The decrease trend suggests that the 2008 CCAP and the Chicago Retrofit Roadmap initiatives to curb emissions have been somewhat effective.
+- The decreasing trend suggests that the 2008 CCAP and the Chicago Retrofit Roadmap initiatives to curb emissions have been somewhat effective.
 
 ## `gas consumption` map
 \vspace{-3ex}
@@ -91,7 +91,7 @@ As we want to see the overall change，we generated geometric maps of greenhouse
 - Similar results can also be drawn from gas and electric consumption. 
 
 ## Three Shiny Apps
-To further see the trends, we build three shiny apps to explore energy efficiency trends across different communities and property types in Chicago. 
+To further observe these trends, we built three shiny apps to explore energy efficiency patterns across the 77 communities and 24 property types in Chicago. 
 
 ```{python}
 #| echo: false 
