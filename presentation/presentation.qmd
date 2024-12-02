@@ -64,7 +64,7 @@ To evaluate the effectiveness and necessity of Chicago's evolving climate polici
 
 - Data inconsistencies occur, such as missing or incorrect values, which required substantial preprocessing to ensure accurate results.
 
-- **Solusion** 
+- **Solution** 
   - we concentrated on **identifying overarching trends**, using an efficiency metric derived from the available data.
 
 # Results
