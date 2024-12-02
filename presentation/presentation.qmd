@@ -84,7 +84,7 @@ Since we are focusing on the overall change, we generated 3 color-coded geometri
 
 - Similar results can also be drawn from gas and electric consumption. 
 
-## `gas consumption` map
+## `electric consumption` map
 \vspace{-3ex}
 ![](pictures/elec.png){ width=80% fig-align="center"}
 
